@@ -3,7 +3,7 @@ use std::io::Read;
 use std::io::Write;
 
 pub struct SaveData {
-    data: Vec<u8>,
+    pub data: Vec<u8>,
 }
 
 impl SaveData {
