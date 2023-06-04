@@ -1,3 +1,4 @@
+mod checksum;
 mod data;
 mod save;
 mod text_encoding;
