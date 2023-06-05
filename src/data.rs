@@ -1,6 +1,10 @@
 use super::save::SaveData;
 use super::text_encoding::*;
 
+pub fn read_u8(save_data: &SaveData, addr: usize) -> u8 {
+    save_data.data[addr]
+}
+
 pub fn read_u16_be(save_data: &SaveData, addr: usize) -> u16 {
     let data = &save_data.data;
 
