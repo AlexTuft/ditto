@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-use phf::phf_map;
 use super::data::*;
 use super::game_data::*;
 use super::save::SaveData;
+use phf::phf_map;
+use std::collections::HashMap;
 
 const OT_NAME_MAX_LEN: usize = 11;
 const NICKNAME_MAX_LEN: usize = 11;
@@ -93,35 +93,37 @@ impl Pokemon {
 
 pub fn get_party_pokemon(save_data: &SaveData) -> Vec<Pokemon> {
     let count = read_u8(save_data, GOLD_SILVER_PARTY_INFO_LAYOUT["count"]) as usize;
-    (0..count).map(|x| {
-        let pokemon_data_addr = GOLD_SILVER_PARTY_INFO_LAYOUT["mon_data"] + x * 48;
-        let mut pokemon = get_pokemon_data(save_data, pokemon_data_addr);
+    (0..count)
+        .map(|x| {
+            let pokemon_data_addr = GOLD_SILVER_PARTY_INFO_LAYOUT["mon_data"] + x * 48;
+            let mut pokemon = get_pokemon_data(save_data, pokemon_data_addr);
 
-        let ot_name_addr = GOLD_SILVER_PARTY_INFO_LAYOUT["ot_names"] + x * OT_NAME_MAX_LEN;
-        pokemon.ot_name = read_string(save_data, ot_name_addr, OT_NAME_MAX_LEN);
-    
-        let nickname_addr = GOLD_SILVER_PARTY_INFO_LAYOUT["nicknames"] + x * OT_NAME_MAX_LEN;
-        pokemon.nickname = read_string(save_data, nickname_addr, NICKNAME_MAX_LEN);
+            let ot_name_addr = GOLD_SILVER_PARTY_INFO_LAYOUT["ot_names"] + x * OT_NAME_MAX_LEN;
+            pokemon.ot_name = read_string(save_data, ot_name_addr, OT_NAME_MAX_LEN);
 
-        pokemon
-    })
-    .collect()
+            let nickname_addr = GOLD_SILVER_PARTY_INFO_LAYOUT["nicknames"] + x * OT_NAME_MAX_LEN;
+            pokemon.nickname = read_string(save_data, nickname_addr, NICKNAME_MAX_LEN);
+
+            pokemon
+        })
+        .collect()
 }
 
 fn get_pokemon_data(save_data: &SaveData, addr: usize) -> Pokemon {
-    let layout: HashMap<&'static str, usize> = GOLD_SILVER_POKEMON_INFO_LAYOUT.entries()
+    let layout: HashMap<&'static str, usize> = GOLD_SILVER_POKEMON_INFO_LAYOUT
+        .entries()
         .into_iter()
         .map(|(k, v)| (*k, v + addr))
         .collect();
     Pokemon {
         dex_no: read_u8(save_data, layout["dex_no"]),
         item: read_u8(save_data, layout["item"]),
-        moves: vec! {
+        moves: vec![
             read_u8(save_data, layout["moves"]),
             read_u8(save_data, layout["moves"] + 1),
             read_u8(save_data, layout["moves"] + 2),
             read_u8(save_data, layout["moves"] + 3),
-        },
+        ],
         ot_id: read_u16_be(save_data, layout["ot_id"]),
         exp: read_u24_be(save_data, layout["exp"]),
         ev_hp: read_u16_be(save_data, layout["ev_hp"]),
@@ -130,12 +132,12 @@ fn get_pokemon_data(save_data: &SaveData, addr: usize) -> Pokemon {
         speed_ev: read_u16_be(save_data, layout["speed_ev"]),
         special_ev: read_u16_be(save_data, layout["special_ev"]),
         ivs: read_u16_be(save_data, layout["ivs"]),
-        pp: vec! {
+        pp: vec![
             read_u8(save_data, layout["pp"]),
             read_u8(save_data, layout["pp"] + 1),
             read_u8(save_data, layout["pp"] + 2),
             read_u8(save_data, layout["pp"] + 3),
-        },
+        ],
         friendship: read_u8(save_data, layout["friendship"]),
         pokerus: read_u8(save_data, layout["pokerus"]),
         caught: read_u16_be(save_data, layout["caught"]),
