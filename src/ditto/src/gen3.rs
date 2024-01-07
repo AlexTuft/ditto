@@ -1,6 +1,3 @@
-use crate::common::Species;
-use core_ux::u24;
-
 /**
  * Struct for raw Pokemon data from Gen III games.
 *  See https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_data_structure_in_Generation_III

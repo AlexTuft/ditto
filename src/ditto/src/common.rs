@@ -1,3 +1,3 @@
-struct Save {
-    data: Vec<u8>,
+pub struct Save {
+    pub data: Vec<u8>,
 }
