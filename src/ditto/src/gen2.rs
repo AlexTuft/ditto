@@ -43,7 +43,7 @@ const GOLD_SILVER_POKEMON_DATA_FIELD_OFFSETS: phf::Map<&str, usize> = phf::phf_m
  * Struct for raw Pokemon data from Gen II games.
  * See https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_data_structure_in_Generation_II
 */
-pub struct PokemonData {
+struct PokemonData {
     // Data available to Pokemon in the player's party and PC
     species_index: u8,
     held_item: u8,
@@ -77,11 +77,11 @@ pub struct PokemonData {
     is_egg: bool,
 }
 
-pub fn read_party_pokemon_count(save: &Save) -> u8 {
+fn read_party_pokemon_count(save: &Save) -> u8 {
     save.data[GOLD_SILVER_PARTY_DATA_OFFSETS["count"]]
 }
 
-pub fn read_party_pokemon_data(save: &Save, slot: u8) -> Option<PokemonData> {
+fn read_party_pokemon_data(save: &Save, slot: u8) -> Option<PokemonData> {
     if slot >= read_party_pokemon_count(save) {
         return None;
     }
@@ -89,7 +89,11 @@ pub fn read_party_pokemon_data(save: &Save, slot: u8) -> Option<PokemonData> {
     let party_pokemon_data_offset =
         GOLD_SILVER_PARTY_DATA_OFFSETS["mon_data"] + slot as usize * GOLD_SILVER_POKEMON_DATA_SIZE;
 
-    let mut pokemon_data = read_pokemon_data(save, party_pokemon_data_offset, GOLD_SILVER_POKEMON_DATA_FIELD_OFFSETS);
+    let mut pokemon_data = read_pokemon_data(
+        save,
+        party_pokemon_data_offset,
+        GOLD_SILVER_POKEMON_DATA_FIELD_OFFSETS,
+    );
     Some(pokemon_data)
 }
 
@@ -99,42 +103,131 @@ fn read_pokemon_data(
     field_offsets: phf::Map<&str, usize>,
 ) -> PokemonData {
     PokemonData {
-        species_index: read_u8(save, field_offsets["species_index"]),
-        held_item: read_u8(save, field_offsets["item"]),
+        species_index: read_u8(save, offset + field_offsets["species_index"]),
+        held_item: read_u8(save, offset + field_offsets["item"]),
         moves: [
-            read_u8(save, field_offsets["moves"]),
-            read_u8(save, field_offsets["moves"] + 1),
-            read_u8(save, field_offsets["moves"] + 2),
-            read_u8(save, field_offsets["moves"] + 3),
+            read_u8(save, offset + field_offsets["moves"]),
+            read_u8(save, offset + field_offsets["moves"] + 1),
+            read_u8(save, offset + field_offsets["moves"] + 2),
+            read_u8(save, offset + field_offsets["moves"] + 3),
         ],
-        original_trainer_id: read_u16_be(save, field_offsets["original_trainer_id"]),
-        experience: read_u24_be(save, field_offsets["exp"]),
-        hp_ev: read_u16_be(save, field_offsets["ev_hp"]),
-        attack_ev: read_u16_be(save, field_offsets["attack_ev"]),
-        defense_ev: read_u16_be(save, field_offsets["defense_ev"]),
-        speed_ev: read_u16_be(save, field_offsets["speed_ev"]),
-        special_ev: read_u16_be(save, field_offsets["special_ev"]),
-        ivs: read_u16_be(save, field_offsets["ivs"]),
+        original_trainer_id: read_u16_be(save, offset + field_offsets["original_trainer_id"]),
+        experience: read_u24_be(save, offset + field_offsets["exp"]),
+        hp_ev: read_u16_be(save, offset + field_offsets["ev_hp"]),
+        attack_ev: read_u16_be(save, offset + field_offsets["attack_ev"]),
+        defense_ev: read_u16_be(save, offset + field_offsets["defense_ev"]),
+        speed_ev: read_u16_be(save, offset + field_offsets["speed_ev"]),
+        special_ev: read_u16_be(save, offset + field_offsets["special_ev"]),
+        ivs: read_u16_be(save, offset + field_offsets["ivs"]),
         move_pps: [
-            read_u8(save, field_offsets["pp"]),
-            read_u8(save, field_offsets["pp"] + 1),
-            read_u8(save, field_offsets["pp"] + 2),
-            read_u8(save, field_offsets["pp"] + 3),
+            read_u8(save, offset + field_offsets["pp"]),
+            read_u8(save, offset + field_offsets["pp"] + 1),
+            read_u8(save, offset + field_offsets["pp"] + 2),
+            read_u8(save, offset + field_offsets["pp"] + 3),
         ],
-        friendship_or_remaining_egg_cycles: read_u8(save, field_offsets["friendship"]),
-        pokerus: read_u8(save, field_offsets["pokerus"]),
-        caught_data: read_u16_be(save, field_offsets["caught"]),
-        level: read_u8(save, field_offsets["level"]),
-        status_condition: read_u8(save, field_offsets["status"]),
-        current_hp: read_u16_be(save, field_offsets["current_hp"]),
-        max_hp: read_u16_be(save, field_offsets["max_hp"]),
-        attack: read_u16_be(save, field_offsets["attack"]),
-        defense: read_u16_be(save, field_offsets["defense"]),
-        speed: read_u16_be(save, field_offsets["speed"]),
-        special_attack: read_u16_be(save, field_offsets["special_attack"]),
-        special_defense: read_u16_be(save, field_offsets["special_defense"]),
+        friendship_or_remaining_egg_cycles: read_u8(save, offset + field_offsets["friendship"]),
+        pokerus: read_u8(save, offset + field_offsets["pokerus"]),
+        caught_data: read_u16_be(save, offset + field_offsets["caught"]),
+        level: read_u8(save, offset + field_offsets["level"]),
+        status_condition: read_u8(save, offset + field_offsets["status"]),
+        current_hp: read_u16_be(save, offset + field_offsets["current_hp"]),
+        max_hp: read_u16_be(save, offset + field_offsets["max_hp"]),
+        attack: read_u16_be(save, offset + field_offsets["attack"]),
+        defense: read_u16_be(save, offset + field_offsets["defense"]),
+        speed: read_u16_be(save, offset + field_offsets["speed"]),
+        special_attack: read_u16_be(save, offset + field_offsets["special_attack"]),
+        special_defense: read_u16_be(save, offset + field_offsets["special_defense"]),
         ot_name: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         nickname: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         is_egg: false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn read_party_count() {
+        let save = crate::read_save("test-saves/pokesilver.sav").unwrap();
+        let count = read_party_pokemon_count(&save);
+        assert_eq!(6, count);
+    }
+
+    #[test]
+    fn read_party_pokemon_species() {
+        let save = crate::read_save("test-saves/pokesilver.sav").unwrap();
+        let pokemon_1 = read_party_pokemon_data(&save, 0).unwrap();
+        let pokemon_2 = read_party_pokemon_data(&save, 1).unwrap();
+        let pokemon_3 = read_party_pokemon_data(&save, 2).unwrap();
+        let pokemon_4 = read_party_pokemon_data(&save, 3).unwrap();
+        let pokemon_5 = read_party_pokemon_data(&save, 4).unwrap();
+        let pokemon_6 = read_party_pokemon_data(&save, 5).unwrap();
+
+        assert_eq!(64, pokemon_1.species_index); // Kadabra
+        assert_eq!(160, pokemon_2.species_index); // Feraligatr
+        assert_eq!(17, pokemon_3.species_index); // Pidgeotto
+        assert_eq!(33, pokemon_4.species_index); // Nidorino
+        assert_eq!(185, pokemon_5.species_index); // Sudowoodo
+        assert_eq!(130, pokemon_6.species_index); // Gyarados
+    }
+
+    #[test]
+    fn read_party_pokemon_items() {
+        let save = crate::read_save("test-saves/pokesilver.sav").unwrap();
+        let pokemon_1 = read_party_pokemon_data(&save, 0).unwrap();
+        let pokemon_2 = read_party_pokemon_data(&save, 1).unwrap();
+        let pokemon_3 = read_party_pokemon_data(&save, 2).unwrap();
+        let pokemon_4 = read_party_pokemon_data(&save, 3).unwrap();
+        let pokemon_5 = read_party_pokemon_data(&save, 4).unwrap();
+        let pokemon_6 = read_party_pokemon_data(&save, 5).unwrap();
+
+        assert_eq!(0, pokemon_1.held_item); // None
+        assert_eq!(91, pokemon_2.held_item); // Amulet Coin
+        assert_eq!(83, pokemon_3.held_item); // Bitter Berry
+        assert_eq!(17, pokemon_4.held_item); // Super Potion
+        assert_eq!(63, pokemon_5.held_item); // Ether
+        assert_eq!(80, pokemon_6.held_item); // Ice Berry
+    }
+
+    #[test]
+    fn read_party_pokemon_moves() {
+        let save = crate::read_save("test-saves/pokesilver.sav").unwrap();
+        let pokemon_1 = read_party_pokemon_data(&save, 0).unwrap();
+        let pokemon_2 = read_party_pokemon_data(&save, 1).unwrap();
+        let pokemon_3 = read_party_pokemon_data(&save, 2).unwrap();
+        let pokemon_4 = read_party_pokemon_data(&save, 3).unwrap();
+        let pokemon_5 = read_party_pokemon_data(&save, 4).unwrap();
+        let pokemon_6 = read_party_pokemon_data(&save, 5).unwrap();
+
+        assert_eq!(60, pokemon_1.moves[0]); // Psybeam
+        assert_eq!(148, pokemon_1.moves[1]); // Flash
+        assert_eq!(248, pokemon_1.moves[2]); // Future Sight
+        assert_eq!(50, pokemon_1.moves[3]); // Disable
+
+        assert_eq!(15, pokemon_2.moves[0]); // Cut
+        assert_eq!(163, pokemon_2.moves[1]); // Slash
+        assert_eq!(44, pokemon_2.moves[2]); // Bite
+        assert_eq!(57, pokemon_2.moves[3]); // Surf
+
+        assert_eq!(33, pokemon_3.moves[0]); // Tackle
+        assert_eq!(19, pokemon_3.moves[1]); // Fly
+        assert_eq!(16, pokemon_3.moves[2]); // Gust
+        assert_eq!(98, pokemon_3.moves[3]); // Quick Attack
+
+        assert_eq!(40, pokemon_4.moves[0]); // Poison Sting
+        assert_eq!(31, pokemon_4.moves[1]); // Fury Attack
+        assert_eq!(30, pokemon_4.moves[2]); // Horn Attack
+        assert_eq!(24, pokemon_4.moves[3]); // Double Kick
+
+        assert_eq!(88, pokemon_5.moves[0]); // Rock Throw
+        assert_eq!(70, pokemon_5.moves[1]); // Strength
+        assert_eq!(175, pokemon_5.moves[2]); // Flail
+        assert_eq!(67, pokemon_5.moves[3]); // Low Kick
+
+        assert_eq!(37, pokemon_6.moves[0]); // Thrash
+        assert_eq!(44, pokemon_6.moves[1]); // Bite
+        assert_eq!(82, pokemon_6.moves[2]); // Dragon Rage
+        assert_eq!(43, pokemon_6.moves[3]); // Leer
     }
 }
